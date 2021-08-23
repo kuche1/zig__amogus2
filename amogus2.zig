@@ -2,41 +2,41 @@
 const std = @import("std");
 const echo = std.debug.print;
 
-//pub const io_mode = .evented;
+const Settings = @import("./settings.zig").Settings;
 
-const MAX_FPS = 5;
+const verson = 0.4;
 
 pub fn main() !void {
-
-    echo(
-        \\Amogus 2 demo 4
-        \\== Patch notes ==
-        \\Max FPS is now {}
-        \\increased number of player polygons
-        \\moved CUM
-        \\closing amogus is now possible
-        \\
-        ,.{MAX_FPS}
-    );
 
     var allocator = std.heap.GeneralPurposeAllocator(.{}){};
     const aloc = &allocator.allocator;
 
-    var resx: u5 = 16;
-    var resy: u5 = 9;
+    var settings = Settings{};
 
+    echo(
+        \\Amogus 2 demo 4
+        \\== Patch notes ==
+        \\increased number of player polygons
+        \\moved CUM
+        \\closing amogus is now possible
+        \\settings are now all packed in one place
+        \\settings are now {}
+        \\
+        ,.{settings}
+    );
 
+    //
     var keyboard = Keyboard{};
     //
-    var display = Display{.resx=resx, .resy=resy};
+    var display = Display{.resx=settings.resx, .resy=settings.resy};
     try display.init(aloc);
     defer display.deinit(aloc);
     //
-    var clock = Clock{.min_dt=@divFloor(std.time.ns_per_s, MAX_FPS)};
-    clock.init();
+    var clock = Clock{};
+    clock.init(settings.max_fps);
     defer clock.deinit();
     //
-    var map = Map{.endy=resy, .endx=resx};
+    var map = Map{.endy=settings.resy, .endx=settings.resx};
     try map.init(aloc);
     defer map.deinit(aloc);
     try map.add_obsticle(aloc, 5, 6, 'C');
@@ -47,7 +47,7 @@ pub fn main() !void {
     try player.init(aloc);
     defer player.deinit(aloc);
     player.spawn(0, 0);
-
+    //
 
     var running = true;
 
@@ -70,10 +70,10 @@ pub fn main() !void {
                 '\n' => break,
                 'p' => running = false,
                 
-                'a' => map.move(&player.pos, &player.model, 0, -1),
-                'd' => map.move(&player.pos, &player.model, 0, 1),
-                'w' => map.move(&player.pos, &player.model, -1, 0),
-                's' => map.move(&player.pos, &player.model, 1, 0),
+                'a' => map.move(&player.phys, 0, -1),
+                'd' => map.move(&player.phys, 0, 1),
+                'w' => map.move(&player.phys, -1, 0),
+                's' => map.move(&player.phys, 1, 0),
                 
                 else => echo("bruh: {c}\n",.{inp}),
             }
@@ -86,29 +86,9 @@ pub fn main() !void {
 
 
 const Player = struct{
-    pos: Pos = undefined,
-    model: Model = undefined,
-
+    phys: Phys = undefined,
+    
     fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
-
-        //const model = @embedFile("./models/player");
-
-        //if(model[model.len] != 0) unreachable;
-        //if(model[model.len -1] != '\n') unreachable;
-
-        //const fixed = model[0..model.len -1];
-
-        //const fixed = "pussy";
-
-        //s.model = try aloc.alloc(u8, fixed.len);
-        //errdefer aloc.free(s.model);
-
-        //for(fixed) |char, i| {
-        //    s.model[i] = char;
-        //}
-        
-        //s.rect.lx = @intCast(@TypeOf(s.rect.lx), s.model.len);
-        //s.rect.ly = 1;
 
         const part1 = [_]u8{'p', 'u', 's', 's', 'y'};
         const part2 = [_]u8{'s', 'l', 'a', 'y', 'e', 'r'};
@@ -125,38 +105,42 @@ const Player = struct{
             model2[ind] = item;
         }
 
-        s.model = try aloc.alloc([]u8, 2);
-        errdefer aloc.free(s.model);
+        s.phys.model = try aloc.alloc([]u8, 2);
+        errdefer aloc.free(s.phys.model);
 
-        s.model[0] = model1;
-        s.model[1] = model2;
+        s.phys.model[0] = model1;
+        s.phys.model[1] = model2;
 
     }
 
     fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
-        for(s.model) |line| {
+        for(s.phys.model) |line| {
             aloc.free(line);
         }
-        aloc.free(s.model);
+        aloc.free(s.phys.model);
     }
 
     fn spawn(s: *@This(), x: i8, y: i8) void {
-        s.pos.x = x;
-        s.pos.y = y;
+        s.phys.pos.x = x;
+        s.phys.pos.y = y;
     }
 
     fn draw(s: *@This(), display: *Display) void {
-        //for(s.model) |char, i| {
-            //unreachable;
-            //display.pix(@intCast(usize, s.rect.y), @intCast(usize, s.rect.x) + i, char);
-        //}
-        for(s.model) |line, li| {
+        for(s.phys.model) |line, li| {
             for(line) |char, ci| {
-                display.pix(@intCast(usize, s.pos.y)+li, @intCast(usize, s.pos.x)+ci, char);
+                display.pix(
+                            @intCast(usize, s.phys.pos.y)+li,
+                            @intCast(usize, s.phys.pos.x)+ci, char
+                            );
             }
         }
     }
 
+};
+
+const Phys = struct{
+    pos: Pos,
+    model: Model,
 };
 
 const Pos = struct{
@@ -189,26 +173,22 @@ const Map = struct{
         s.obsticles[s.obsticles.len-1] = .{.y=y, .x=x, .model=model};
     }
 
-    fn move(s: *@This(), pos: *Pos, model: *Model, y: i8, x: i8) void {// add map resolution, currently inf
+    fn move(s: *@This(), phys: *Phys, y: i8, x: i8) void {// add map resolution, currently inf
     
         var xi: i8 = 0;
         var yi: i8 = 0;
 
-
-        //while(yi < rect.ly) : (yi += 1) {
-        //    while(xi < rect.lx) : (xi += 1) {
-        //        if(s.collision(rect.y+y+yi, rect.x+x+xi)) return;
-        //    }
-        //}
-
-        for(model.*) |line, li| {
+        for(phys.model) |line, li| {
             for(line) |char, ci| {
-                if(s.collision(pos.y+y+@intCast(i8, li), pos.x+x+@intCast(i8, ci))) return;
+                if(s.collision(
+                                phys.pos.y+y+@intCast(i8, li),
+                                phys.pos.x+x+@intCast(i8, ci)
+                                )) return;
             }
         }
 
-        pos.x += x;
-        pos.y += y;
+        phys.pos.x += x;
+        phys.pos.y += y;
 
     }
 
@@ -309,10 +289,11 @@ const Display = struct{
 
 const Clock = struct{
 
-    min_dt: i128,
+    min_dt: i128 = undefined,
     time: i128 = undefined,
 
-    fn init(s: *@This()) void {
+    fn init(s: *@This(), max_fps: u64) void {
+        s.min_dt = @divFloor(std.time.ns_per_s, max_fps);
         s.time = std.time.nanoTimestamp();
     }
 
