@@ -4,7 +4,7 @@ const echo = std.debug.print;
 
 const Settings = @import("./settings.zig").Settings;
 
-const verson = 0.4;
+const verson = 0.5;
 
 pub fn main() !void {
 
@@ -14,15 +14,11 @@ pub fn main() !void {
     var settings = Settings{};
 
     echo(
-        \\Amogus 2 demo 4
+        \\Amogus 2 demo 5
         \\== Patch notes ==
-        \\increased number of player polygons
-        \\moved CUM
-        \\closing amogus is now possible
-        \\settings are now all packed in one place
-        \\settings are now {}
+        \\executable for linix (lol)
         \\
-        ,.{settings}
+        ,.{}
     );
 
     //
