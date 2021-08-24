@@ -10,7 +10,7 @@ const c = @cImport({
 
 const Settings = @import("./settings.zig").Settings;
 
-const verson = 0.6;
+const verson = 0.7;
 
 pub fn main() !void {
 
@@ -22,7 +22,6 @@ pub fn main() !void {
     echo(
         \\Amogus 2 demo 6
         \\== Patch notes ==
-        \\increased keyboard
         \\
         ,.{}
     );
