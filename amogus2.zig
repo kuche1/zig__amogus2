@@ -4,6 +4,8 @@
 // networking
 // choveche
 
+const verson = 0.7;
+
 const std = @import("std");
 const echo = std.debug.print;
 
@@ -13,9 +15,25 @@ const c = @cImport({
     @cInclude("unistd.h");
 });
 
-const Settings = @import("./settings.zig").Settings;
+const Phys = struct{
+    pos: Pos,
+    model: Model,
+};
 
-const verson = 0.7;
+const Pos = struct{
+    x: i8,
+    y: i8,
+};
+
+const Model = [][]Limb;
+
+const Limb = u8;
+const NOPHYS: Limb = ' ';
+const TRANSPARENT: Limb = ' ';
+
+const Pix = u8;
+
+const Settings = @import("./settings.zig").Settings;
 
 pub fn main() !void {
 
@@ -148,8 +166,7 @@ const Player = struct{
     fn draw(s: *@This(), display: *Display) void {
         for(s.phys.model) |line, li| {
             for(line) |char, ci| {
-                if(char == NOLIMB) continue;
-                display.pix(
+                display.limb(
                             @intCast(usize, s.phys.pos.y)+li,
                             @intCast(usize, s.phys.pos.x)+ci,
                             char,
@@ -160,27 +177,13 @@ const Player = struct{
 
 };
 
-const Phys = struct{
-    pos: Pos,
-    model: Model,
-};
-
-const Pos = struct{
-    x: i8,
-    y: i8,
-};
-
-const Model = [][]Limb;
-const Limb = u8;
-const NOLIMB: Limb = ' ';
-
 const Map = struct{
     endx: u7,
     endy: u7,
     obsticles: []struct{// hui
         y: i8,
         x: i8,
-        model: u8,
+        model: Limb,
     } = undefined,
 
     fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
@@ -192,7 +195,8 @@ const Map = struct{
         aloc.free(s.obsticles);
     }
 
-    fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, y: i8, x: i8, model: u8) !void {
+    fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, y: i8, x: i8, model: Limb) !void {
+        if(model == NOPHYS) return;
         s.obsticles = try aloc.realloc(s.obsticles, s.obsticles.len+1);
         s.obsticles[s.obsticles.len-1] = .{.y=y, .x=x, .model=model};
     }
@@ -219,7 +223,7 @@ const Map = struct{
 
     fn collision(s: *@This(), y: i8, x: i8, limb: Limb) bool {
 
-        if(limb == NOLIMB) return false;
+        if(limb == NOPHYS) return false;
 
         if(x < 0 or y < 0) return true;
         if(x >= s.endx or y >= s.endy) return true;
@@ -232,7 +236,7 @@ const Map = struct{
 
     fn draw(s: *@This(), display: *Display) void {
         for(s.obsticles) |ob| {
-            display.pix(@intCast(usize, ob.y), @intCast(usize, ob.x), ob.model);
+            display.limb(@intCast(usize, ob.y), @intCast(usize, ob.x), ob.model);
         }
     }
 };
@@ -279,10 +283,41 @@ const Keyboard = struct{
     }
 };
 
+const Clock = struct{
+
+    min_dt: i128 = undefined,
+    time: i128 = undefined,
+
+    fn init(s: *@This(), max_fps: u64) void {
+        s.min_dt = @divFloor(std.time.ns_per_s, max_fps);
+        s.time = std.time.nanoTimestamp();
+    }
+
+    fn deinit(s: *@This()) void {
+        // empty
+    }
+
+    fn tick(s: *@This()) i128 {
+
+        const time = std.time.nanoTimestamp();
+        const dt = time - s.time;
+        s.time = time;
+
+        const dt_diff = s.min_dt - dt;
+        if(dt_diff > 0){
+            std.time.sleep(@intCast(u64, dt_diff));
+        }
+
+        return dt;
+
+    }
+
+};
+
 const Display = struct{
     resx: u8,
     resy: u8,
-    buf: [][]u8 = undefined,
+    buf: [][]Pix = undefined,
 
     fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
 
@@ -307,16 +342,21 @@ const Display = struct{
         aloc.free(s.buf);
     }
 
-    fn pix(s: *@This(), y: usize, x: usize, v: u8) void {
-        s.buf[y][x] = v;
-    }
-
     fn clear(s: *@This()) void {
         for(s.buf) |line, y| {
             for(line) |_, x| {
                 s.pix(y, x, ' ');
             }
         }
+    }
+
+    fn limb(s: *@This(), y: usize, x: usize, v: Limb) void {
+        if(v == TRANSPARENT) return;
+        s.pix(y, x, v);
+    }
+
+    fn pix(s: *@This(), y: usize, x: usize, v: Pix) void {
+        s.buf[y][x] = v;
     }
 
     fn draw(s: *@This()) !void {
@@ -344,37 +384,6 @@ const Display = struct{
             ind += 1;
         }
         echo("\n", .{});//try print("\n", .{});
-
-    }
-
-};
-
-const Clock = struct{
-
-    min_dt: i128 = undefined,
-    time: i128 = undefined,
-
-    fn init(s: *@This(), max_fps: u64) void {
-        s.min_dt = @divFloor(std.time.ns_per_s, max_fps);
-        s.time = std.time.nanoTimestamp();
-    }
-
-    fn deinit(s: *@This()) void {
-        // empty
-    }
-
-    fn tick(s: *@This()) i128 {
-
-        const time = std.time.nanoTimestamp();
-        const dt = time - s.time;
-        s.time = time;
-
-        const dt_diff = s.min_dt - dt;
-        if(dt_diff > 0){
-            std.time.sleep(@intCast(u64, dt_diff));
-        }
-
-        return dt;
 
     }
 
