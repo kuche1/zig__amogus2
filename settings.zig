@@ -15,14 +15,7 @@ pub const Settings = struct{
 
         const cwd = std.fs.cwd();
     
-        const f = cwd.openFile("./settings/resx_80", .{.read=true}) catch |e| {
-            switch(e){
-                error.FileNotFound => return,
-                else => return e,
-            }
-        };
-
-        s.resx = 80;
+        if(try exists("resx_80")) s.resx = 80;
     }
 
     pub fn deinit(s: *@This()) void {
@@ -43,3 +36,19 @@ const Keybindings = struct{
     move_down: Key = 's',
 
 };
+
+fn exists(name: []const u8) !bool {
+    
+    const cwd = std.fs.cwd();
+
+    const set_dir = try cwd.openDir("./settings/", .{});
+
+    const f = set_dir.openFile(name, .{.read=true}) catch |e| {
+        switch(e){
+            error.FileNotFound => return true,
+            else => return e,
+        }
+    };
+    defer f.close();
+    return true;
+}
