@@ -45,7 +45,7 @@ pub fn main() !void {
     echo(
         \\Amogus 2 demo 7
         \\== Patch notes ==
-        \\moved CUM
+        \\increased SUS
         \\increased player polygons
         \\
         ,.{}
@@ -67,9 +67,9 @@ pub fn main() !void {
     var map = Map{.endy=settings.resy, .endx=settings.resx};
     try map.init(aloc);
     defer map.deinit(aloc);
-    try map.add_obsticle(aloc, 5, 10, 'C');
+    try map.add_obsticle(aloc, 5, 10, 'S');
     try map.add_obsticle(aloc, 5, 11, 'U');
-    try map.add_obsticle(aloc, 5, 12, 'M');
+    try map.add_obsticle(aloc, 5, 12, 'S');
     //
     var player = Player{};
     try player.init(aloc);
@@ -123,16 +123,12 @@ const Player = struct{
         var arr1: []const u8 = "   pussy";
         var arr2: []const u8 = "dest   royer";
 
-        echo("arr1={s} len={}\n", .{@TypeOf(arr1), arr1.len});
+        var m0: []const u8 = "  0";
+        var m1: []const u8 = " /|\\";
+        var m2: []const u8 = "  |";
+        var m3: []const u8 = " / \\";
 
-        var ptr1 = &arr1;
-        var ptr2 = &arr2;
-
-        echo("ptr1={s}\n", .{@TypeOf(ptr1)});
-
-        var ptrs: []*[]const u8 = ([_]*[]const u8{ptr1, ptr2})[0..];
-
-        echo("ptrs={s}\n", .{@TypeOf(ptrs)});
+        var ptrs: []*[]const u8 = ([_]*[]const u8{&m0, &m1, &m2, &m3})[0..];
 
         s.phys.model = try aloc.alloc([]u8, ptrs.len);
         errdefer aloc.free(s.phys.model);
