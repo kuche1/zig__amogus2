@@ -2,9 +2,15 @@
 const std = @import("std");
 const echo = std.debug.print;
 
+const c = @cImport({
+    @cInclude("stdlib.h");
+    @cInclude("termios.h");
+    @cInclude("unistd.h");
+});
+
 const Settings = @import("./settings.zig").Settings;
 
-const verson = 0.5;
+const verson = 0.6;
 
 pub fn main() !void {
 
@@ -23,6 +29,8 @@ pub fn main() !void {
 
     //
     var keyboard = Keyboard{};
+    try keyboard.init();
+    defer keyboard.deinit();
     //
     var display = Display{.resx=settings.resx, .resy=settings.resy};
     try display.init(aloc);
@@ -60,7 +68,7 @@ pub fn main() !void {
 
         while(true) {
 
-            const inp = try keyboard.read();
+            const inp = keyboard.read() catch break;
 
             switch(inp){
                 '\n' => break,
@@ -207,6 +215,41 @@ const Map = struct{
 };
 
 const Keyboard = struct{
+
+    original_terminal_settings: c.struct_termios = undefined,
+
+    fn init(s: *@This()) !void {
+
+        const stdin_fileno = std.c.STDIN_FILENO;
+    
+        if (c.tcgetattr(stdin_fileno, &s.original_terminal_settings) < 0) {
+            //std.debug.warn("could not get terminal settings\n", .{});
+            //std.os.exit(1);
+            return error.cant_get_terminal_settings;
+        }
+
+        var raw: c.struct_termios = s.original_terminal_settings;
+
+        raw.c_iflag &= ~@intCast(c_uint, (c.BRKINT | c.ICRNL | c.INPCK | c.ISTRIP | c.IXON));
+        raw.c_lflag &= ~@intCast(c_uint, (c.ECHO | c.ICANON | c.IEXTEN | c.ISIG));
+
+        // non-blocking read
+        raw.c_cc[c.VMIN] = 0;
+        raw.c_cc[c.VTIME] = 0;
+
+        if (c.tcsetattr(stdin_fileno, c.TCSANOW, &raw) < 0) {
+            std.debug.warn("could not set new terminal settings\n", .{});
+            std.os.exit(1);
+        }
+
+        //_ = c.atexit(cleanup_terminal);
+    }
+
+    fn deinit(s: *@This()) void {
+        const stdin_fileno = std.c.STDIN_FILENO;
+        _ = c.tcsetattr(stdin_fileno, c.TCSANOW, &s.original_terminal_settings);
+    }
+
     fn read(s: *@This()) !u8 {
         const stdin = std.io.getStdIn().reader();
         return stdin.readByte();
