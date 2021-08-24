@@ -1,4 +1,9 @@
 
+// TODO
+// revert the ' ' hack
+// networking
+// choveche
+
 const std = @import("std");
 const echo = std.debug.print;
 
@@ -20,8 +25,10 @@ pub fn main() !void {
     var settings = Settings{};
 
     echo(
-        \\Amogus 2 demo 6
+        \\Amogus 2 demo 7
         \\== Patch notes ==
+        \\moved CUM
+        \\increased player polygons
         \\
         ,.{}
     );
@@ -42,9 +49,9 @@ pub fn main() !void {
     var map = Map{.endy=settings.resy, .endx=settings.resx};
     try map.init(aloc);
     defer map.deinit(aloc);
-    try map.add_obsticle(aloc, 5, 6, 'C');
-    try map.add_obsticle(aloc, 5, 7, 'U');
-    try map.add_obsticle(aloc, 5, 8, 'M');
+    try map.add_obsticle(aloc, 5, 10, 'C');
+    try map.add_obsticle(aloc, 5, 11, 'U');
+    try map.add_obsticle(aloc, 5, 12, 'M');
     //
     var player = Player{};
     try player.init(aloc);
@@ -62,12 +69,12 @@ pub fn main() !void {
         try display.draw();
 
 
-        const dt = clock.tick();
+        //const dt = clock.tick();
 
 
         while(true) {
 
-            const inp = keyboard.read() catch break;
+            const inp = keyboard.read() catch continue;
 
             switch(inp){
                 '\n' => break,
@@ -81,6 +88,8 @@ pub fn main() !void {
                 else => echo("bruh: {c}\n",.{inp}),
             }
 
+            break;
+
         }
 
     }
@@ -93,26 +102,34 @@ const Player = struct{
     
     fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
 
-        const part1 = [_]u8{'p', 'u', 's', 's', 'y'};
-        const part2 = [_]u8{'s', 'l', 'a', 'y', 'e', 'r'};
+        var arr1: []const u8 = "   pussy";
+        var arr2: []const u8 = "dest   royer";
 
-        const model1 = try aloc.alloc(u8, part1.len);
-        errdefer aloc.free(model1);
-        for(part1) |item, ind| {
-            model1[ind] = item;
-        }
+        echo("arr1={s} len={}\n", .{@TypeOf(arr1), arr1.len});
 
-        const model2 = try aloc.alloc(u8, part2.len);
-        errdefer aloc.free(model2);
-        for(part2) |item, ind| {
-            model2[ind] = item;
-        }
+        var ptr1 = &arr1;
+        var ptr2 = &arr2;
 
-        s.phys.model = try aloc.alloc([]u8, 2);
+        echo("ptr1={s}\n", .{@TypeOf(ptr1)});
+
+        var ptrs: []*[]const u8 = ([_]*[]const u8{ptr1, ptr2})[0..];
+
+        echo("ptrs={s}\n", .{@TypeOf(ptrs)});
+
+        s.phys.model = try aloc.alloc([]u8, ptrs.len);
         errdefer aloc.free(s.phys.model);
 
-        s.phys.model[0] = model1;
-        s.phys.model[1] = model2;
+        for(ptrs) |line, li| {
+        
+            const model = try aloc.alloc(u8, line.len);
+            errdefer aloc.free(model);
+
+            for(line.*) |item, ind| {
+                model[ind] = item;
+            }
+
+            s.phys.model[li] = model;
+        }
 
     }
 
@@ -131,9 +148,11 @@ const Player = struct{
     fn draw(s: *@This(), display: *Display) void {
         for(s.phys.model) |line, li| {
             for(line) |char, ci| {
+                if(char == NOLIMB) continue;
                 display.pix(
                             @intCast(usize, s.phys.pos.y)+li,
-                            @intCast(usize, s.phys.pos.x)+ci, char
+                            @intCast(usize, s.phys.pos.x)+ci,
+                            char,
                             );
             }
         }
@@ -151,7 +170,9 @@ const Pos = struct{
     y: i8,
 };
 
-const Model = [][]u8;
+const Model = [][]Limb;
+const Limb = u8;
+const NOLIMB: Limb = ' ';
 
 const Map = struct{
     endx: u7,
@@ -185,7 +206,8 @@ const Map = struct{
             for(line) |char, ci| {
                 if(s.collision(
                                 phys.pos.y+y+@intCast(i8, li),
-                                phys.pos.x+x+@intCast(i8, ci)
+                                phys.pos.x+x+@intCast(i8, ci),
+                                char,
                                 )) return;
             }
         }
@@ -195,7 +217,9 @@ const Map = struct{
 
     }
 
-    fn collision(s: *@This(), y: i8, x: i8) bool {
+    fn collision(s: *@This(), y: i8, x: i8, limb: Limb) bool {
+
+        if(limb == NOLIMB) return false;
 
         if(x < 0 or y < 0) return true;
         if(x >= s.endx or y >= s.endy) return true;
