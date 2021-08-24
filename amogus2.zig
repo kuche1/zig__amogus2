@@ -20,9 +20,9 @@ pub fn main() !void {
     var settings = Settings{};
 
     echo(
-        \\Amogus 2 demo 5
+        \\Amogus 2 demo 6
         \\== Patch notes ==
-        \\executable for linix (lol)
+        \\increased keyboard
         \\
         ,.{}
     );
