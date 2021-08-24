@@ -2,7 +2,6 @@
 const std = @import("std");
 
 const glob = @import("./glob.zig");
-const Settings = @import("./settings.zig").Settings;
 const Display = @import("./display.zig").Display;
 
 pub const Player = struct{
