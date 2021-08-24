@@ -30,8 +30,6 @@ pub fn main() !void {
     var allocator = std.heap.GeneralPurposeAllocator(.{}){};
     const aloc = &allocator.allocator;
 
-    var settings = Settings{};
-
     try print(
         \\Amogus 2 demo v{}
         \\== Patch notes ==
@@ -44,6 +42,10 @@ pub fn main() !void {
     var keyboard = Keyboard{};
     try keyboard.init();
     defer keyboard.deinit();
+    //
+    var settings = Settings{};
+    try settings.init();
+    defer settings.deinit();
     //
     var display = Display{.resx=settings.resx, .resy=settings.resy};
     try display.init(aloc);
@@ -83,14 +85,14 @@ pub fn main() !void {
 
             const inp = keyboard.char() catch break;
 
-            if(inp == settings.key_quit){
+            if(inp == settings.key.quit){
                 running = false;
                 continue;
             }
-            else if(inp == settings.key_move_left) map.move(&player.phys, 0, -1)
-            else if(inp == settings.key_move_right) map.move(&player.phys, 0, 1)
-            else if(inp == settings.key_move_up) map.move(&player.phys, -1, 0)
-            else if(inp == settings.key_move_down) map.move(&player.phys, 1, 0)
+            else if(inp == settings.key.move_left) map.move(&player.phys, 0, -1)
+            else if(inp == settings.key.move_right) map.move(&player.phys, 0, 1)
+            else if(inp == settings.key.move_up) map.move(&player.phys, -1, 0)
+            else if(inp == settings.key.move_down) map.move(&player.phys, 1, 0)
             ;
 
         }
