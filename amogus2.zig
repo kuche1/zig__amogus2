@@ -1,12 +1,12 @@
 
 // TODO
-// revert the ' ' hack
 // networking
-// choveche
+// keypress keyrelease
 
-const verson = 0.7;
+const version = 0.8;
 
 const std = @import("std");
+const print = std.io.getStdOut().writer().print;
 const echo = std.debug.print;
 
 const c = @cImport({
@@ -42,13 +42,16 @@ pub fn main() !void {
 
     var settings = Settings{};
 
-    echo(
-        \\Amogus 2 demo 7
+    try print(
+        \\Amogus 2 demo v{}
         \\== Patch notes ==
         \\increased SUS
         \\increased player polygons
+        \\keyboard binding now in settings
+        \\windows disabled
+        \\printer enabled
         \\
-        ,.{}
+        ,.{version}
     );
 
     //
@@ -87,26 +90,22 @@ pub fn main() !void {
         try display.draw();
 
 
-        //const dt = clock.tick();
+        const dt = clock.tick();
 
 
         while(true) {
 
-            const inp = keyboard.read() catch continue;
+            const inp = keyboard.read() catch break;
 
-            switch(inp){
-                '\n' => break,
-                'p' => running = false,
-                
-                'a' => map.move(&player.phys, 0, -1),
-                'd' => map.move(&player.phys, 0, 1),
-                'w' => map.move(&player.phys, -1, 0),
-                's' => map.move(&player.phys, 1, 0),
-                
-                else => echo("bruh: {c}\n",.{inp}),
+            if(inp == settings.key_quit){
+                running = false;
+                continue;
             }
-
-            break;
+            else if(inp == settings.key_move_left) map.move(&player.phys, 0, -1)
+            else if(inp == settings.key_move_right) map.move(&player.phys, 0, 1)
+            else if(inp == settings.key_move_up) map.move(&player.phys, -1, 0)
+            else if(inp == settings.key_move_down) map.move(&player.phys, 1, 0)
+            ;
 
         }
 
@@ -358,28 +357,28 @@ const Display = struct{
     fn draw(s: *@This()) !void {
 
         var ind: u8 = 0;
-        echo(" ", .{});
+        try print(" ", .{});
         while(ind < s.resx){
-            echo("-", .{});//try print("-", .{});
+            try print("-", .{});
             ind += 1;
         }
-        echo("\n", .{});//try print("\n", .{});
+        try print("\n", .{});
 
         for(s.buf)|line|{
-            echo("|", .{});
+            try print("|", .{});
             for(line)|pixel|{
-                echo("{c}", .{pixel});//try print("{c}", .{pixel});
+                try print("{c}", .{pixel});
             }
-            echo("|\n",.{});//try print("|\n",.{});
+            try print("|\n",.{});
         }
 
         ind = 0;
-        echo(" ", .{});
+        try print(" ", .{});
         while(ind < s.resx){
-            echo("-", .{});//try print("-", .{});
+            try print("-", .{});
             ind += 1;
         }
-        echo("\n", .{});//try print("\n", .{});
+        try print("\n", .{});
 
     }
 
