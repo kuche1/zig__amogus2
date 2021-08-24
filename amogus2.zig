@@ -8,6 +8,8 @@
 // custom maps
 // replace glob
 // use display, and not print
+// add non-en_US support
+// separate model from hitbox?
 
 const version = 0.8;
 

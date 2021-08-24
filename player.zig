@@ -9,9 +9,6 @@ pub const Player = struct{
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
 
-        var arr1: []const u8 = "   pussy";
-        var arr2: []const u8 = "dest   royer";
-
         var m_1:[]const u8 = " ^ ^";
         var m0: []const u8 = "  O";
         var m1: []const u8 = " /|\\";
