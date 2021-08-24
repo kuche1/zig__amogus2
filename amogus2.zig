@@ -2,6 +2,12 @@
 // TODO
 // networking
 // keypress keyrelease
+// custom skins
+// custom maps
+// rework map
+// custom maps
+// replace glob
+// use display, and not print
 
 const version = 0.8;
 
@@ -15,25 +21,12 @@ const c = @cImport({
     @cInclude("unistd.h");
 });
 
-const Phys = struct{
-    pos: Pos,
-    model: Model,
-};
-
-const Pos = struct{
-    x: i8,
-    y: i8,
-};
-
-const Model = [][]Limb;
-
-const Limb = u8;
-const NOPHYS: Limb = ' ';
-const TRANSPARENT: Limb = ' ';
-
-const Pix = u8;
+const glob = @import("./glob.zig");
+const Display = @import("./display.zig").Display;
+const Player = @import("./player.zig").Player;
 
 const Settings = @import("./settings.zig").Settings;
+
 
 pub fn main() !void {
 
@@ -45,11 +38,7 @@ pub fn main() !void {
     try print(
         \\Amogus 2 demo v{}
         \\== Patch notes ==
-        \\increased SUS
-        \\increased player polygons
-        \\keyboard binding now in settings
-        \\windows disabled
-        \\printer enabled
+        \\more modulised
         \\
         ,.{version}
     );
@@ -114,71 +103,13 @@ pub fn main() !void {
 }
 
 
-const Player = struct{
-    phys: Phys = undefined,
-    
-    fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
-
-        var arr1: []const u8 = "   pussy";
-        var arr2: []const u8 = "dest   royer";
-
-        var m0: []const u8 = "  0";
-        var m1: []const u8 = " /|\\";
-        var m2: []const u8 = "  |";
-        var m3: []const u8 = " / \\";
-
-        var ptrs: []*[]const u8 = ([_]*[]const u8{&m0, &m1, &m2, &m3})[0..];
-
-        s.phys.model = try aloc.alloc([]u8, ptrs.len);
-        errdefer aloc.free(s.phys.model);
-
-        for(ptrs) |line, li| {
-        
-            const model = try aloc.alloc(u8, line.len);
-            errdefer aloc.free(model);
-
-            for(line.*) |item, ind| {
-                model[ind] = item;
-            }
-
-            s.phys.model[li] = model;
-        }
-
-    }
-
-    fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
-        for(s.phys.model) |line| {
-            aloc.free(line);
-        }
-        aloc.free(s.phys.model);
-    }
-
-    fn spawn(s: *@This(), x: i8, y: i8) void {
-        s.phys.pos.x = x;
-        s.phys.pos.y = y;
-    }
-
-    fn draw(s: *@This(), display: *Display) void {
-        for(s.phys.model) |line, li| {
-            for(line) |char, ci| {
-                display.limb(
-                            @intCast(usize, s.phys.pos.y)+li,
-                            @intCast(usize, s.phys.pos.x)+ci,
-                            char,
-                            );
-            }
-        }
-    }
-
-};
-
 const Map = struct{
     endx: u7,
     endy: u7,
     obsticles: []struct{// hui
         y: i8,
         x: i8,
-        model: Limb,
+        model: glob.Limb,
     } = undefined,
 
     fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
@@ -190,13 +121,13 @@ const Map = struct{
         aloc.free(s.obsticles);
     }
 
-    fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, y: i8, x: i8, model: Limb) !void {
-        if(model == NOPHYS) return;
+    fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, y: i8, x: i8, model: glob.Limb) !void {
+        if(model == glob.LIMB_NOPHYS) return;
         s.obsticles = try aloc.realloc(s.obsticles, s.obsticles.len+1);
         s.obsticles[s.obsticles.len-1] = .{.y=y, .x=x, .model=model};
     }
 
-    fn move(s: *@This(), phys: *Phys, y: i8, x: i8) void {// add map resolution, currently inf
+    fn move(s: *@This(), phys: *glob.Phys, y: i8, x: i8) void {// add map resolution, currently inf
     
         var xi: i8 = 0;
         var yi: i8 = 0;
@@ -216,9 +147,9 @@ const Map = struct{
 
     }
 
-    fn collision(s: *@This(), y: i8, x: i8, limb: Limb) bool {
+    fn collision(s: *@This(), y: i8, x: i8, limb: glob.Limb) bool {
 
-        if(limb == NOPHYS) return false;
+        if(limb == glob.LIMB_NOPHYS) return false;
 
         if(x < 0 or y < 0) return true;
         if(x >= s.endx or y >= s.endy) return true;
@@ -308,79 +239,3 @@ const Clock = struct{
     }
 
 };
-
-const Display = struct{
-    resx: u8,
-    resy: u8,
-    buf: [][]Pix = undefined,
-
-    fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
-
-        s.buf = try aloc.alloc([]u8, s.resy);
-        errdefer aloc.free(s.buf);
-
-        for(s.buf) |_, y| {
-            s.buf[y] = try aloc.alloc(u8, s.resx);
-            errdefer {
-                for(buf[0..y]) |item| {
-                    aloc.free(item);
-                }
-            }
-        }
-
-    }
-
-    fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
-        for(s.buf) |line| {
-            aloc.free(line);
-        }
-        aloc.free(s.buf);
-    }
-
-    fn clear(s: *@This()) void {
-        for(s.buf) |line, y| {
-            for(line) |_, x| {
-                s.pix(y, x, ' ');
-            }
-        }
-    }
-
-    fn limb(s: *@This(), y: usize, x: usize, v: Limb) void {
-        if(v == TRANSPARENT) return;
-        s.pix(y, x, v);
-    }
-
-    fn pix(s: *@This(), y: usize, x: usize, v: Pix) void {
-        s.buf[y][x] = v;
-    }
-
-    fn draw(s: *@This()) !void {
-
-        var ind: u8 = 0;
-        try print(" ", .{});
-        while(ind < s.resx){
-            try print("-", .{});
-            ind += 1;
-        }
-        try print("\n", .{});
-
-        for(s.buf)|line|{
-            try print("|", .{});
-            for(line)|pixel|{
-                try print("{c}", .{pixel});
-            }
-            try print("|\n",.{});
-        }
-
-        ind = 0;
-        try print(" ", .{});
-        while(ind < s.resx){
-            try print("-", .{});
-            ind += 1;
-        }
-        try print("\n", .{});
-
-    }
-
-};
-
