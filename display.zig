@@ -26,11 +26,11 @@ pub const Pix_axis_pos = u8;
 
 
 pub const Display = struct{
-    res: Pix_pos = undefined,
+    res: Pix_pos = .{.x=0, .y=0},
     buf: [][]Pix = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
-        try s.autoresize(aloc);
+        s.buf = try aloc.alloc(@TypeOf(s.buf[0]), 0);
     }
 
     pub fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
@@ -40,19 +40,24 @@ pub const Display = struct{
         aloc.free(s.buf);
     }
 
-    pub fn autoresize(s: *@This(), aloc: *std.mem.Allocator) !void {
+    pub fn autoresize(s: *@This(), aloc: *std.mem.Allocator, map: *Map) !void {
 
         var size: c.winsize = undefined;
         var res: c_int = c.ioctl(c.STDOUT_FILENO, c.TIOCGWINSZ, &size);
         if(res != 0){
-            return error.ioctl_fucked_up_getting_the_terminal_size;
+            return error.ioctl_fucked_up_getting_the_display_size;
         }
+
+        if(s.res.x == size.ws_col and s.res.y == size.ws_row) return;
 
         s.res = .{
                 .x=@intCast(@TypeOf(s.res.x), size.ws_col) -2, // borders
                 .y=@intCast(@TypeOf(s.res.y), size.ws_row) -3, // borders + last NL
                 };
 
+        if(s.res.x <= map.endx or s.res.y <= map.endy) return error.map_cant_fit_on_display;
+
+        aloc.free(s.buf);
         s.buf = try aloc.alloc([]u8, s.res.y);
         errdefer aloc.free(s.buf);
 
@@ -67,7 +72,10 @@ pub const Display = struct{
 
     }
 
-    pub fn clear(s: *@This(), map: *Map) void {
+    pub fn clear(s: *@This(), aloc: *std.mem.Allocator, map: *Map) !void {
+
+        try s.autoresize(aloc, map);
+    
         for(s.buf) |line, y| {
             for(line) |_, x| {
                 s.pix(.{.x=@intCast(Pix_axis_pos, x), .y=@intCast(Pix_axis_pos, y)}, ' ');

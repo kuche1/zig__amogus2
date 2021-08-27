@@ -26,9 +26,6 @@ pub const Map = struct{
     } = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator, display: *Display) !void {
-
-        if(display.res.x < s.endx or display.res.y < s.endy) return error.map_cant_fit_on_display;
-
         s.obsticles = try aloc.alloc(@TypeOf(s.obsticles[0]), 0);
         defer aloc.free(s.obsticles);
     }
