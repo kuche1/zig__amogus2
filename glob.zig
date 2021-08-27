@@ -1,12 +1,9 @@
 
+const Pos = @import("./map.zig").Pos;
+
 pub const Phys = struct{
     pos: Pos,
     model: Model,
-};
-
-pub const Pos = struct{
-    x: i8,
-    y: i8,
 };
 
 pub const Model = [][]Limb;

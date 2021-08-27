@@ -1,15 +1,26 @@
 
+// TODO
+// change Map.obsticles
+
 const std = @import("std");
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
 
+
+pub const Pos = struct{
+    x: Axis_pos,
+    y: Axis_pos,
+};
+
+const Axis_pos = i8;
+
+
 pub const Map = struct{
     endx: u7,
     endy: u7,
     obsticles: []struct{// hui
-        y: i8,
-        x: i8,
+        pos: Pos,
         model: glob.Limb,
     } = undefined,
 
@@ -22,10 +33,10 @@ pub const Map = struct{
         aloc.free(s.obsticles);
     }
 
-    pub fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, y: i8, x: i8, model: glob.Limb) !void {
+    pub fn add_obsticle(s: *@This(), aloc: *std.mem.Allocator, pos: Pos, model: glob.Limb) !void {
         if(model == glob.LIMB_NOPHYS) return;
         s.obsticles = try aloc.realloc(s.obsticles, s.obsticles.len+1);
-        s.obsticles[s.obsticles.len-1] = .{.y=y, .x=x, .model=model};
+        s.obsticles[s.obsticles.len-1] = .{.pos=pos, .model=model};
     }
 
     pub fn move(s: *@This(), phys: *glob.Phys, y: i8, x: i8) void {// add map resolution, currently inf
@@ -56,14 +67,14 @@ pub const Map = struct{
         if(x >= s.endx or y >= s.endy) return true;
     
         for(s.obsticles) |ob| {
-            if(ob.y == y and ob.x == x) return true;
+            if(ob.pos.y == y and ob.pos.x == x) return true;
         }
         return false;
     }
 
     pub fn draw(s: *@This(), display: *Display) void {
         for(s.obsticles) |ob| {
-            display.limb(@intCast(usize, ob.y), @intCast(usize, ob.x), ob.model);
+            display.limb(@intCast(usize, ob.pos.y), @intCast(usize, ob.pos.x), ob.model);
         }
     }
 };

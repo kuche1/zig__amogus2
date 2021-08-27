@@ -60,9 +60,9 @@ pub fn main() !void {
     var map = Map{.endy=settings.resy, .endx=settings.resx};
     try map.init(aloc);
     defer map.deinit(aloc);
-    try map.add_obsticle(aloc, 5, 10, 'S');
-    try map.add_obsticle(aloc, 5, 11, 'U');
-    try map.add_obsticle(aloc, 5, 12, 'S');
+    try map.add_obsticle(aloc, .{.y=5, .x=10}, 'S');
+    try map.add_obsticle(aloc, .{.y=5, .x=11}, 'U');
+    try map.add_obsticle(aloc, .{.y=5, .x=12}, 'S');
     //
     var player = Player{};
     try player.init(aloc);
