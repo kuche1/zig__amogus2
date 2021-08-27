@@ -32,7 +32,7 @@ pub fn main() !void {
     const aloc = &allocator.allocator;
 
     try print(
-        \\Amogus 2 demo v{}
+        \\Amogus 3 demo v{}
         \\== Patch notes ==
         \\
         ,.{version}
