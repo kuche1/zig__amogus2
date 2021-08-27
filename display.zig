@@ -39,7 +39,7 @@ pub const Display = struct{
         }
 
         s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
-        s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 4; // borders + space for msgs
+        s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 3; // borders + last NL
 
         s.buf = try aloc.alloc([]u8, s.resy);
         errdefer aloc.free(s.buf);
