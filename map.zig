@@ -17,8 +17,8 @@ const Axis_pos = i8;
 
 
 pub const Map = struct{
-    endx: u7,
-    endy: u7,
+    endx: Axis_pos,
+    endy: Axis_pos,
     obsticles: []struct{// hui
         pos: Pos,
         model: glob.Limb,
