@@ -61,10 +61,11 @@ pub const Map = struct{
 
     fn collision(s: *@This(), y: i8, x: i8, limb: glob.Limb) bool {
 
-        if(limb == glob.LIMB_NOPHYS) return false;
-
         if(x < 0 or y < 0) return true;
         if(x >= s.endx or y >= s.endy) return true;
+
+        if(limb == glob.LIMB_NOPHYS) return false; // this is not above as the player model
+                                                   // may start with NOPHYS
     
         for(s.obsticles) |ob| {
             if(ob.pos.y == y and ob.pos.x == x) return true;

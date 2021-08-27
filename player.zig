@@ -3,17 +3,18 @@ const std = @import("std");
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
+const Pos = @import("./map.zig").Pos;
 
 pub const Player = struct{
     phys: glob.Phys = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
 
-        var m_1:[]const u8 = " ^ ^";
-        var m0: []const u8 = "  O";
-        var m1: []const u8 = " /|\\";
-        var m2: []const u8 = "  |";
-        var m3: []const u8 = " / \\";
+        var m_1:[]const u8 = "^ ^";
+        var m0: []const u8 = " O";
+        var m1: []const u8 = "/|\\";
+        var m2: []const u8 = " |";
+        var m3: []const u8 = "/ \\";
 
         var ptrs: []*[]const u8 = ([_]*[]const u8{&m_1, &m0, &m1, &m2, &m3})[0..];
 
@@ -41,9 +42,8 @@ pub const Player = struct{
         aloc.free(s.phys.model);
     }
 
-    pub fn spawn(s: *@This(), x: i8, y: i8) void {
-        s.phys.pos.x = x;
-        s.phys.pos.y = y;
+    pub fn spawn(s: *@This(), pos: Pos) void {
+        s.phys.pos = pos;
     }
 
     pub fn draw(s: *@This(), display: *Display) void {

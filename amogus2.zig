@@ -67,7 +67,7 @@ pub fn main() !void {
     var player = Player{};
     try player.init(aloc);
     defer player.deinit(aloc);
-    player.spawn(0, 0);
+    player.spawn(.{.x=0, .y=0});
     //
 
     var running = true;

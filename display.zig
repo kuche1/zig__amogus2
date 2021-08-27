@@ -84,7 +84,7 @@ pub const Display = struct{
             for(line)|pixel|{
                 try print("{c}", .{pixel});
             }
-            try print("|\n",.{});
+            try print("|",.{});
         }
 
         ind = 0;
