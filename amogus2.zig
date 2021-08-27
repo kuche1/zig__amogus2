@@ -34,9 +34,6 @@ pub fn main() !void {
     try print(
         \\Amogus 2 demo v{}
         \\== Patch notes ==
-        \\more modulised
-        \\dynamic resolution
-        \\smt idk
         \\
         ,.{version}
     );
