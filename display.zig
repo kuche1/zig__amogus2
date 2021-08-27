@@ -48,9 +48,6 @@ pub const Display = struct{
             return error.ioctl_fucked_up_getting_the_terminal_size;
         }
 
-        //s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
-        //s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 3; // borders + last NL
-
         s.res = .{
                 .x=@intCast(@TypeOf(s.res.x), size.ws_col) -2, // borders
                 .y=@intCast(@TypeOf(s.res.y), size.ws_row) -3, // borders + last NL
@@ -78,8 +75,14 @@ pub const Display = struct{
         }
 
         var i: u8 = 0;
+
+        while(i < map.endy): (i += 1){
+            s.pix(.{.x=@intCast(Pix_axis_pos, map.endx), .y=i}, BORDER_VERTICAL);
+        }
+
+        i = 0;
         while(i < map.endx): (i += 1){
-            
+            s.pix(.{.x=i, .y=@intCast(Pix_axis_pos, map.endy)}, BORDER_HORIZONTAL);
         }
     }
 
