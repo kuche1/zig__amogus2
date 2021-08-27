@@ -1,17 +1,35 @@
 
+// compile with "--library c"
+
 const std = @import("std");
 const print = std.io.getStdOut().writer().print;
+const echo = std.debug.print;
+
+const c = @cImport({
+    @cInclude("sys/ioctl.h");
+    @cInclude("unistd.h");
+});
 
 const glob = @import("./glob.zig");
 
 const Pix = u8;
 
 pub const Display = struct{
-    resx: u8,
-    resy: u8,
+    resx: u8 = undefined,
+    resy: u8 = undefined,
     buf: [][]Pix = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
+
+        var size: c.winsize = undefined;
+        var res: c_int = c.ioctl(c.STDOUT_FILENO, c.TIOCGWINSZ, &size);
+        if(res != 0){
+            return error.ioctl_fucked_up_getting_the_terminal_size;
+        }
+
+        s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
+        s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 4; // borders + space for msgs
+        
 
         s.buf = try aloc.alloc([]u8, s.resy);
         errdefer aloc.free(s.buf);

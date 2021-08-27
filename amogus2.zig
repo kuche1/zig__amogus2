@@ -49,7 +49,7 @@ pub fn main() !void {
     try settings.init();
     defer settings.deinit();
     //
-    var display = Display{.resx=settings.resx, .resy=settings.resy};
+    var display = Display{};
     try display.init(aloc);
     defer display.deinit(aloc);
     //
