@@ -7,11 +7,10 @@
 // rework map
 // custom maps
 // replace glob
-// use display, and not print
 // add non-en_US support
 // separate model from hitbox?
 
-const version = 0.8;
+const version = 0.9;
 
 const std = @import("std");
 const print = std.io.getStdOut().writer().print;
@@ -36,6 +35,8 @@ pub fn main() !void {
         \\Amogus 2 demo v{}
         \\== Patch notes ==
         \\more modulised
+        \\dynamic resolution
+        \\smt idk
         \\
         ,.{version}
     );
