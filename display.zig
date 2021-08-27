@@ -13,6 +13,8 @@ const c = @cImport({
 const glob = @import("./glob.zig");
 
 const Pix = u8;
+const BORDER_HORIZONTAL: Pix = '-';
+const BORDER_VERTICAL: Pix = '|';
 
 pub const Display = struct{
     resx: u8 = undefined,
@@ -77,23 +79,23 @@ pub const Display = struct{
         var ind: u8 = 0;
         try print(" ", .{});
         while(ind < s.resx){
-            try print("-", .{});
+            try print("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
         try print("\n", .{});
 
         for(s.buf)|line|{
-            try print("|", .{});
+            try print("{c}", .{BORDER_VERTICAL});
             for(line)|pixel|{
                 try print("{c}", .{pixel});
             }
-            try print("|",.{});
+            try print("{c}",.{BORDER_VERTICAL});
         }
 
         ind = 0;
         try print(" ", .{});
         while(ind < s.resx){
-            try print("-", .{});
+            try print("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
         try print("\n", .{});
