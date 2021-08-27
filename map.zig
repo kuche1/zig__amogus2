@@ -6,6 +6,7 @@ const std = @import("std");
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
+const Pix_pos = @import("./display.zig").Pix_pos;
 
 
 pub const Pos = struct{
@@ -26,7 +27,7 @@ pub const Map = struct{
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator, display: *Display) !void {
 
-        if(display.resx < s.endx or display.resy < s.endy) return error.map_cant_fit_on_display;
+        if(display.res.x < s.endx or display.res.y < s.endy) return error.map_cant_fit_on_display;
 
         s.obsticles = try aloc.alloc(@TypeOf(s.obsticles[0]), 0);
         defer aloc.free(s.obsticles);
@@ -42,7 +43,7 @@ pub const Map = struct{
         s.obsticles[s.obsticles.len-1] = .{.pos=pos, .model=model};
     }
 
-    pub fn move(s: *@This(), phys: *glob.Phys, y: i8, x: i8) void {// add map resolution, currently inf
+    pub fn move(s: *@This(), phys: *glob.Phys, y: Map_axis_pos, x: Map_axis_pos) void {// add map resolution, currently inf
     
         var xi: i8 = 0;
         var yi: i8 = 0;
@@ -78,7 +79,7 @@ pub const Map = struct{
 
     pub fn draw(s: *@This(), display: *Display) void {
         for(s.obsticles) |ob| {
-            display.limb(@intCast(usize, ob.pos.y), @intCast(usize, ob.pos.x), ob.model);
+            display.limb(@bitCast(Pix_pos, ob.pos), ob.model);
         }
     }
 };

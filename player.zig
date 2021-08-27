@@ -3,7 +3,9 @@ const std = @import("std");
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
+const Pix_axis_pos = @import("./display.zig").Pix_axis_pos;
 const Pos = @import("./map.zig").Pos;
+const Map_axis_pos = @import("./map.zig").Map_axis_pos;
 
 pub const Player = struct{
     phys: glob.Phys = undefined,
@@ -50,8 +52,10 @@ pub const Player = struct{
         for(s.phys.model) |line, li| {
             for(line) |char, ci| {
                 display.limb(
-                            @intCast(usize, s.phys.pos.y)+li,
-                            @intCast(usize, s.phys.pos.x)+ci,
+                            .{
+                                .x = @intCast(Pix_axis_pos, s.phys.pos.x + @intCast(Map_axis_pos, ci)),
+                                .y = @intCast(Pix_axis_pos, s.phys.pos.y + @intCast(Map_axis_pos, li)),
+                            },
                             char,
                             );
             }

@@ -74,7 +74,7 @@ pub fn main() !void {
 
     while(running){
 
-        display.clear();
+        display.clear(&map);
         map.draw(&display);
         player.draw(&display);
         try display.draw();

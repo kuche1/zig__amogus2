@@ -11,14 +11,22 @@ const c = @cImport({
 });
 
 const glob = @import("./glob.zig");
+const Map = @import("./map.zig").Map;
 
 const Pix = u8;
 const BORDER_HORIZONTAL: Pix = '-';
 const BORDER_VERTICAL: Pix = '|';
 
+pub const Pix_pos = struct{
+    x: Pix_axis_pos,
+    y: Pix_axis_pos,
+};
+
+pub const Pix_axis_pos = u8;
+
+
 pub const Display = struct{
-    resx: u8 = undefined,
-    resy: u8 = undefined,
+    res: Pix_pos = undefined,
     buf: [][]Pix = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
@@ -40,14 +48,19 @@ pub const Display = struct{
             return error.ioctl_fucked_up_getting_the_terminal_size;
         }
 
-        s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
-        s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 3; // borders + last NL
+        //s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
+        //s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 3; // borders + last NL
 
-        s.buf = try aloc.alloc([]u8, s.resy);
+        s.res = .{
+                .x=@intCast(@TypeOf(s.res.x), size.ws_col) -2, // borders
+                .y=@intCast(@TypeOf(s.res.y), size.ws_row) -3, // borders + last NL
+                };
+
+        s.buf = try aloc.alloc([]u8, s.res.y);
         errdefer aloc.free(s.buf);
 
         for(s.buf) |_, y| {
-            s.buf[y] = try aloc.alloc(u8, s.resx);
+            s.buf[y] = try aloc.alloc(u8, s.res.x);
             errdefer {
                 for(buf[0..y]) |item| {
                     aloc.free(item);
@@ -57,28 +70,33 @@ pub const Display = struct{
 
     }
 
-    pub fn clear(s: *@This()) void {
+    pub fn clear(s: *@This(), map: *Map) void {
         for(s.buf) |line, y| {
             for(line) |_, x| {
-                s.pix(y, x, ' ');
+                s.pix(.{.x=@intCast(Pix_axis_pos, x), .y=@intCast(Pix_axis_pos, y)}, ' ');
             }
+        }
+
+        var i: u8 = 0;
+        while(i < map.endx): (i += 1){
+            
         }
     }
 
-    pub fn limb(s: *@This(), y: usize, x: usize, v: glob.Limb) void {
+    pub fn limb(s: *@This(), pos: Pix_pos, v: glob.Limb) void {
         if(v == glob.LIMB_TRANSPARENT) return;
-        s.pix(y, x, v);
+        s.pix(pos, v);
     }
 
-    fn pix(s: *@This(), y: usize, x: usize, v: Pix) void {
-        s.buf[y][x] = v;
+    fn pix(s: *@This(), pos: Pix_pos, v: Pix) void {
+        s.buf[pos.y][pos.x] = v;
     }
 
     pub fn draw(s: *@This()) !void {
 
         var ind: u8 = 0;
         try print(" ", .{});
-        while(ind < s.resx){
+        while(ind < s.res.x){
             try print("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
@@ -94,7 +112,7 @@ pub const Display = struct{
 
         ind = 0;
         try print(" ", .{});
-        while(ind < s.resx){
+        while(ind < s.res.x){
             try print("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
