@@ -2,7 +2,6 @@
 // compile with "--library c"
 
 const std = @import("std");
-const print = std.io.getStdOut().writer().print;
 const echo = std.debug.print;
 
 const c = @cImport({
@@ -112,29 +111,34 @@ pub const Display = struct{
     pub fn draw(s: *@This()) !void {
 
         var ind: u8 = 0;
-        try print(" ", .{});
+        try s.prnt(" ", .{});
         while(ind < s.res.x){
-            try print("{c}", .{BORDER_HORIZONTAL});
+            try s.prnt("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
-        try print("\n", .{});
+        try s.prnt("\n", .{});
 
         for(s.buf)|line|{
-            try print("{c}", .{BORDER_VERTICAL});
+            try s.prnt("{c}", .{BORDER_VERTICAL});
             for(line)|pixel|{
-                try print("{c}", .{pixel});
+                try s.prnt("{c}", .{pixel});
             }
-            try print("{c}",.{BORDER_VERTICAL});
+            try s.prnt("{c}",.{BORDER_VERTICAL});
         }
 
         ind = 0;
-        try print(" ", .{});
+        try s.prnt(" ", .{});
         while(ind < s.res.x){
-            try print("{c}", .{BORDER_HORIZONTAL});
+            try s.prnt("{c}", .{BORDER_HORIZONTAL});
             ind += 1;
         }
-        try print("\n", .{});
+        try s.prnt("\n", .{});
 
+    }
+
+    fn prnt(s: *@This(), comptime fmt: []const u8, args: anytype) !void {
+        const print = std.io.getStdOut().writer().print;
+        return print(fmt, args);
     }
 
 };
