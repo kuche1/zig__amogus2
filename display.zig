@@ -1,4 +1,7 @@
 
+// TODO
+// optimize drawing
+
 // compile with "--library c"
 
 const std = @import("std");
