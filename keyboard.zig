@@ -1,4 +1,7 @@
 
+// NOTE
+// compile with "--library c"
+
 const std = @import("std");
 
 const c = @cImport({
