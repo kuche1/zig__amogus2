@@ -20,6 +20,17 @@ pub const Display = struct{
     buf: [][]Pix = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
+        try s.autoresize(aloc);
+    }
+
+    pub fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
+        for(s.buf) |line| {
+            aloc.free(line);
+        }
+        aloc.free(s.buf);
+    }
+
+    pub fn autoresize(s: *@This(), aloc: *std.mem.Allocator) !void {
 
         var size: c.winsize = undefined;
         var res: c_int = c.ioctl(c.STDOUT_FILENO, c.TIOCGWINSZ, &size);
@@ -29,7 +40,6 @@ pub const Display = struct{
 
         s.resx = @intCast(@TypeOf(s.resx), size.ws_col) - 2; // borders
         s.resy = @intCast(@TypeOf(s.resy), size.ws_row) - 4; // borders + space for msgs
-        
 
         s.buf = try aloc.alloc([]u8, s.resy);
         errdefer aloc.free(s.buf);
@@ -43,13 +53,6 @@ pub const Display = struct{
             }
         }
 
-    }
-
-    pub fn deinit(s: *@This(), aloc: *std.mem.Allocator) void {
-        for(s.buf) |line| {
-            aloc.free(line);
-        }
-        aloc.free(s.buf);
     }
 
     pub fn clear(s: *@This()) void {

@@ -9,22 +9,25 @@ const Display = @import("./display.zig").Display;
 
 
 pub const Pos = struct{
-    x: Axis_pos,
-    y: Axis_pos,
+    x: Map_axis_pos,
+    y: Map_axis_pos,
 };
 
-const Axis_pos = i8;
+pub const Map_axis_pos = i8;
 
 
 pub const Map = struct{
-    endx: Axis_pos,
-    endy: Axis_pos,
+    endx: Map_axis_pos,
+    endy: Map_axis_pos,
     obsticles: []struct{// hui
         pos: Pos,
         model: glob.Limb,
     } = undefined,
 
-    pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
+    pub fn init(s: *@This(), aloc: *std.mem.Allocator, display: *Display) !void {
+
+        if(display.resx < s.endx or display.resy < s.endy) return error.map_cant_fit_on_display;
+
         s.obsticles = try aloc.alloc(@TypeOf(s.obsticles[0]), 0);
         defer aloc.free(s.obsticles);
     }

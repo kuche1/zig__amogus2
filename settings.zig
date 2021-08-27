@@ -4,9 +4,12 @@
 
 const std = @import("std");
 
+const Map_axis_pos = @import("./map.zig").Map_axis_pos;
+
 pub const Settings = struct{
-    resx: u7 = 60,
-    resy: u7 = 20,
+
+    map_sizex: Map_axis_pos = 60,
+    map_sizey: Map_axis_pos = 20,
     max_fps: u16 = 5,
 
     key: Keybindings = kb: {
@@ -18,7 +21,7 @@ pub const Settings = struct{
 
         const cwd = std.fs.cwd();
     
-        if(try exists("resx_80")) s.resx = 80;
+        if(try exists("resx_80")) s.map_sizex = 80;
     }
 
     pub fn deinit(s: *@This()) void {

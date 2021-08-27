@@ -57,8 +57,8 @@ pub fn main() !void {
     clock.init(settings.max_fps);
     defer clock.deinit();
     //
-    var map = Map{.endy=settings.resy, .endx=settings.resx};
-    try map.init(aloc);
+    var map = Map{.endy=settings.map_sizey, .endx=settings.map_sizex};
+    try map.init(aloc, &display);
     defer map.deinit(aloc);
     try map.add_obsticle(aloc, .{.y=5, .x=10}, 'S');
     try map.add_obsticle(aloc, .{.y=5, .x=11}, 'U');
