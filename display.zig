@@ -50,8 +50,8 @@ pub const Display = struct{
         if(s.res.x == size.ws_col and s.res.y == size.ws_row) return;
 
         s.res = .{
-                .x=@intCast(@TypeOf(s.res.x), size.ws_col) -2, // borders
-                .y=@intCast(@TypeOf(s.res.y), size.ws_row) -3, // borders + last NL
+                .x=@intCast(@TypeOf(s.res.x), size.ws_col),
+                .y=@intCast(@TypeOf(s.res.y), size.ws_row),
                 };
 
         if(s.res.x <= map.endx or s.res.y <= map.endy) return error.map_cant_fit_on_display;
@@ -110,30 +110,12 @@ pub const Display = struct{
 
     pub fn draw(s: *@This()) !void {
 
-        var ind: u8 = 0;
-        try s.prnt(" ", .{});
-        while(ind < s.res.x){
-            try s.prnt("{c}", .{BORDER_HORIZONTAL});
-            ind += 1;
-        }
-        try s.prnt("\n", .{});
-
-        for(s.buf)|line|{
-            try s.prnt("{c}", .{BORDER_VERTICAL});
-            for(line)|pixel|{
+        for(s.buf)|line, li|{
+            for(line)|pixel, pi|{
+                try s.prnt("\x1b[{d};{d}H", .{li+1, pi+1});
                 try s.prnt("{c}", .{pixel});
             }
-            try s.prnt("{c}",.{BORDER_VERTICAL});
         }
-
-        ind = 0;
-        try s.prnt(" ", .{});
-        while(ind < s.res.x){
-            try s.prnt("{c}", .{BORDER_HORIZONTAL});
-            ind += 1;
-        }
-        try s.prnt("\n", .{});
-
     }
 
     fn prnt(s: *@This(), comptime fmt: []const u8, args: anytype) !void {

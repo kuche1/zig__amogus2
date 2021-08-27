@@ -10,7 +10,7 @@ pub const Settings = struct{
 
     map_sizex: Map_axis_pos = 60,
     map_sizey: Map_axis_pos = 20,
-    max_fps: u16 = 5,
+    max_fps: u16 = 10,
 
     key: Keybindings = kb: {
         var value = Keybindings{};
