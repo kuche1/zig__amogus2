@@ -1,4 +1,7 @@
 
+// NOTE
+// the resolution field is useless
+
 const std = @import("std");
 
 pub const Settings = struct{
