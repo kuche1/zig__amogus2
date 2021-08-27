@@ -58,7 +58,12 @@ pub const Display = struct{
         if(s.res.x <= map.endx or s.res.y <= map.endy) return error.map_cant_fit_on_display;
         // <= cuz ofthe borders (or smt)
 
+        for(s.buf) |line| {
+            aloc.free(line);
+        }
+        s.buf.len = 0;
         aloc.free(s.buf);
+
         s.buf = try aloc.alloc([]u8, s.res.y);
         errdefer aloc.free(s.buf);
 
