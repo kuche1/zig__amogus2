@@ -18,7 +18,10 @@ const echo = std.debug.print;
 
 const glob = @import("./glob.zig");
 const Keyboard = @import("./keyboard.zig").Keyboard;
+//
 const Display = @import("./display.zig").Display;
+const Pix_axis_pos = @import("./display.zig").Pix_axis_pos;
+//
 const Clock = @import("./clock.zig").Clock;
 const Map = @import("./map.zig").Map;
 const Player = @import("./player.zig").Player;
@@ -75,7 +78,7 @@ pub fn main() !void {
         try display.clear(aloc, &map);
         map.draw(&display);
         player.draw(&display);
-        try display.draw();
+        try display.draw(.{.x=@intCast(Pix_axis_pos, map.endx)+1, .y=@intCast(Pix_axis_pos, map.endy)+1});
 
 
         const dt = clock.tick();

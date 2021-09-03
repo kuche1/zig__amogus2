@@ -111,10 +111,14 @@ pub const Display = struct{
         s.buf[pos.y][pos.x] = v;
     }
 
-    pub fn draw(s: *@This()) !void {
+    pub fn draw(s: *@This(), end: Pix_pos) !void {
 
         for(s.buf)|line, li|{
+            if(li >= end.y) break;
+            
             for(line)|pixel, pi|{
+                if(pi >= end.x) break;
+            
                 try s.prnt("\x1b[{d};{d}H", .{li+1, pi+1});
                 try s.prnt("{c}", .{pixel});
             }
