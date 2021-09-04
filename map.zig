@@ -62,7 +62,7 @@ pub const Map = struct{
 
     }
 
-    fn collision(s: *@This(), pos: Pos, limb: glob.Limb) bool {// TODO change x,y
+    fn collision(s: *@This(), pos: Pos, limb: glob.Limb) bool {
 
         if(pos.x < 0 or pos.y < 0) return true;
         if(pos.x >= s.endx or pos.y >= s.endy) return true;
