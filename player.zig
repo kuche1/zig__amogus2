@@ -18,7 +18,8 @@ pub const Player = struct{
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
 
-        s.speed = 1;
+        s.speed = 0.000000012;
+        //s.speed = 1 / @intToFloat(@TypeOf(s.speed), std.time.nanoTimestamp());
 
         var m_1:[]const u8 = "^ ^";
         var m0: []const u8 = " O";
@@ -75,8 +76,10 @@ pub const Player = struct{
     }
 
     pub fn commit_movement(s: *@This(), dt: i128, map: *Map) void {
-        map.move(&s.phys, .{.x=s.pos_change.x, .y=0});
-        map.move(&s.phys, .{.x=0, .y=s.pos_change.y});
+        //echo("{}\n", .{@intToFloat(@TypeOf(s.pos_change.x), dt)});
+        echo("{}\n", .{s.phys.pos.x});
+        map.move(&s.phys, .{.x=s.pos_change.x * @intToFloat(@TypeOf(s.pos_change.x), dt), .y=0});
+        map.move(&s.phys, .{.y=s.pos_change.y * @intToFloat(@TypeOf(s.pos_change.y), dt), .x=0});
     }
 
     pub fn draw(s: *@This(), display: *Display) void {
