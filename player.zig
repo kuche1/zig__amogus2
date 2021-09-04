@@ -1,16 +1,24 @@
 
 const std = @import("std");
+const echo = std.debug.print;
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
 const Pix_axis_pos = @import("./display.zig").Pix_axis_pos;
+const Map = @import("./map.zig").Map;
 const Pos = @import("./map.zig").Pos;
 const Map_axis_pos = @import("./map.zig").Map_axis_pos;
 
 pub const Player = struct{
+
     phys: glob.Phys = undefined,
+    speed: Map_axis_pos = undefined,
+
+    pos_change: Pos = undefined,
 
     pub fn init(s: *@This(), aloc: *std.mem.Allocator) !void {
+
+        s.speed = 1;
 
         var m_1:[]const u8 = "^ ^";
         var m0: []const u8 = " O";
@@ -45,7 +53,30 @@ pub const Player = struct{
     }
 
     pub fn spawn(s: *@This(), pos: Pos) void {
+        s.pos_change = .{.x=0, .y=0};
         s.phys.pos = pos;
+    }
+
+    pub fn move_left(s: *@This()) void {
+        if(s.pos_change.x < 0) s.pos_change.x = 0
+        else s.pos_change.x = -s.speed;
+    }
+    pub fn move_right(s: *@This()) void {
+        if(s.pos_change.x > 0) s.pos_change.x = 0
+        else s.pos_change.x = s.speed;
+    }
+    pub fn move_up(s: *@This()) void {
+        if(s.pos_change.y < 0) s.pos_change.y = 0
+        else s.pos_change.y = -s.speed;
+    }
+    pub fn move_down(s: *@This()) void {
+        if(s.pos_change.y > 0) s.pos_change.y = 0
+        else s.pos_change.y = s.speed;
+    }
+
+    pub fn commit_movement(s: *@This(), dt: i128, map: *Map) void {
+        map.move(&s.phys, .{.x=s.pos_change.x, .y=0});
+        map.move(&s.phys, .{.x=0, .y=s.pos_change.y});
     }
 
     pub fn draw(s: *@This(), display: *Display) void {
