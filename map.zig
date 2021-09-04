@@ -6,6 +6,7 @@ const std = @import("std");
 
 const glob = @import("./glob.zig");
 const Display = @import("./display.zig").Display;
+const Pix_axis_pos = @import("./display.zig").Pix_axis_pos;
 const Pix_pos = @import("./display.zig").Pix_pos;
 
 
@@ -14,7 +15,7 @@ pub const Pos = struct{
     y: Map_axis_pos,
 };
 
-pub const Map_axis_pos = i8;
+pub const Map_axis_pos = f32;
 
 
 pub const Map = struct{
@@ -47,9 +48,10 @@ pub const Map = struct{
 
         for(phys.model) |line, li| {
             for(line) |char, ci| {
-                if(s.collision(
-                                phys.pos.y + change.y + @intCast(i8, li),
-                                phys.pos.x + change.x + @intCast(i8, ci),
+                if(s.collision(.{
+                                .y=phys.pos.y + change.y + @intToFloat(@TypeOf(phys.pos.y), li),
+                                .x=phys.pos.x + change.x + @intToFloat(@TypeOf(phys.pos.x), ci),
+                                },
                                 char,
                                 )) return;
             }
@@ -60,23 +62,24 @@ pub const Map = struct{
 
     }
 
-    fn collision(s: *@This(), y: i8, x: i8, limb: glob.Limb) bool {
+    fn collision(s: *@This(), pos: Pos, limb: glob.Limb) bool {// TODO change x,y
 
-        if(x < 0 or y < 0) return true;
-        if(x >= s.endx or y >= s.endy) return true;
+        if(pos.x < 0 or pos.y < 0) return true;
+        if(pos.x >= s.endx or pos.y >= s.endy) return true;
 
         if(limb == glob.LIMB_NOPHYS) return false; // this is not above as the player model
                                                    // may start with NOPHYS
     
         for(s.obsticles) |ob| {
-            if(ob.pos.y == y and ob.pos.x == x) return true;
+            if(ob.pos.y == pos.y and ob.pos.x == pos.x) return true;
         }
         return false;
     }
 
     pub fn draw(s: *@This(), display: *Display) void {
         for(s.obsticles) |ob| {
-            display.limb(@bitCast(Pix_pos, ob.pos), ob.model);
+            display.limb(.{.x=@floatToInt(Pix_axis_pos, ob.pos.x),
+                           .y=@floatToInt(Pix_axis_pos, ob.pos.y)}, ob.model);
         }
     }
 };

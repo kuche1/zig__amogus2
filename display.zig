@@ -57,8 +57,10 @@ pub const Display = struct{
                 .y=@intCast(@TypeOf(s.res.y), size.ws_row),
                 };
 
-        if(s.res.x <= map.endx or s.res.y <= map.endy) return error.map_cant_fit_on_display;
-        // <= cuz ofthe borders (or smt)
+        if(s.res.x <= @floatToInt(Pix_axis_pos, map.endx) 
+        or s.res.y <= @floatToInt(Pix_axis_pos, map.endy)) // cuz ofthe borders (or smt)
+            return error.map_cant_fit_on_display;
+        
 
         for(s.buf) |line| {
             aloc.free(line);
@@ -92,13 +94,13 @@ pub const Display = struct{
 
         var i: u8 = 0;
 
-        while(i < map.endy): (i += 1){
-            s.pix(.{.x=@intCast(Pix_axis_pos, map.endx), .y=i}, BORDER_VERTICAL);
+        while(i < @floatToInt(@TypeOf(i), map.endy)): (i += 1){
+            s.pix(.{.x=@floatToInt(Pix_axis_pos, map.endx), .y=i}, BORDER_VERTICAL);
         }
 
         i = 0;
-        while(i < map.endx): (i += 1){
-            s.pix(.{.x=i, .y=@intCast(Pix_axis_pos, map.endy)}, BORDER_HORIZONTAL);
+        while(i < @floatToInt(@TypeOf(i), map.endx)): (i += 1){
+            s.pix(.{.x=i, .y=@floatToInt(Pix_axis_pos, map.endy)}, BORDER_HORIZONTAL);
         }
     }
 

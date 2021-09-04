@@ -79,7 +79,8 @@ pub fn main() !void {
         try display.clear(aloc, &map);
         map.draw(&display);
         player.draw(&display);
-        try display.draw(.{.x=@intCast(Pix_axis_pos, map.endx)+1, .y=@intCast(Pix_axis_pos, map.endy)+1});
+        try display.draw(.{.x=@floatToInt(Pix_axis_pos, map.endx)+1, 
+                           .y=@floatToInt(Pix_axis_pos, map.endy)+1});
 
 
         const dt = clock.tick();

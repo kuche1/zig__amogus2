@@ -84,8 +84,8 @@ pub const Player = struct{
             for(line) |char, ci| {
                 display.limb(
                             .{
-                                .x = @intCast(Pix_axis_pos, s.phys.pos.x + @intCast(Map_axis_pos, ci)),
-                                .y = @intCast(Pix_axis_pos, s.phys.pos.y + @intCast(Map_axis_pos, li)),
+                                .x = @floatToInt(Pix_axis_pos, s.phys.pos.x + @intToFloat(Map_axis_pos, ci)),
+                                .y = @floatToInt(Pix_axis_pos, s.phys.pos.y + @intToFloat(Map_axis_pos, li)),
                             },
                             char,
                             );
