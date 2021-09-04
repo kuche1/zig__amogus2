@@ -38,6 +38,8 @@ pub fn main() !void {
         \\Amogus 3 demo v{}
         \\== Patch notes ==
         \\idk
+        \\max speed increased to infinite
+        \\collision broken
         \\
         ,.{version}
     );
