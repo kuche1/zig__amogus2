@@ -18,6 +18,9 @@ pub const Pos = struct{
 pub const Map_axis_pos = f32;
 
 
+const PHYSICS_RESOLUTION: Map_axis_pos = 0.1;
+
+
 pub const Map = struct{
     endx: Map_axis_pos,
     endy: Map_axis_pos,
@@ -41,8 +44,28 @@ pub const Map = struct{
         s.obsticles[s.obsticles.len-1] = .{.pos=pos, .model=model};
     }
 
-    pub fn move(s: *@This(), phys: *glob.Phys, change: Pos) void {// add map resolution, currently inf
-    
+    pub fn move(s: *@This(), phys: *glob.Phys, change: Pos) bool {
+
+        if(@fabs(change.x) > PHYSICS_RESOLUTION) {
+            var sign: @TypeOf(change.x) = undefined;
+            if(change.x > 0) sign = 1
+            else sign = -1;
+            
+            if(s.move(phys, .{.x=sign*PHYSICS_RESOLUTION, .y=change.y}))
+                return s.move(phys, .{.x=sign * (@fabs(change.x) - PHYSICS_RESOLUTION), .y=change.y});
+            return false;
+        }
+
+        if(@fabs(change.y) > PHYSICS_RESOLUTION) {
+            var sign: @TypeOf(change.y) = undefined;
+            if(change.y > 0) sign = 1
+            else sign = -1;
+            
+            if(s.move(phys, .{.y=sign*PHYSICS_RESOLUTION, .x=change.x}))
+                return s.move(phys, .{.y=sign * (@fabs(change.y) - PHYSICS_RESOLUTION), .x=change.x});
+            return false;
+        }
+
         var xi: i8 = 0;
         var yi: i8 = 0;
 
@@ -53,12 +76,14 @@ pub const Map = struct{
                                 .x=phys.pos.x + change.x + @intToFloat(@TypeOf(phys.pos.x), ci),
                                 },
                                 char,
-                                )) return;
+                                )) return false;
             }
         }
 
         phys.pos.x += change.x;
         phys.pos.y += change.y;
+
+        return true;
 
     }
 
