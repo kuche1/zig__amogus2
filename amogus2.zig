@@ -88,10 +88,7 @@ pub fn main() !void {
 
             const inp = keyboard.char() catch break;
 
-            if(inp == settings.key.quit){
-                running = false;
-                continue;
-            }
+            if(inp == settings.key.quit) running = false
             else if(inp == settings.key.move_left) map.move(&player.phys, 0, -1)
             else if(inp == settings.key.move_right) map.move(&player.phys, 0, 1)
             else if(inp == settings.key.move_up) map.move(&player.phys, -1, 0)
