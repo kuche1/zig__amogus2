@@ -40,7 +40,7 @@ pub const Map = struct{
         s.obsticles[s.obsticles.len-1] = .{.pos=pos, .model=model};
     }
 
-    pub fn move(s: *@This(), phys: *glob.Phys, y: Map_axis_pos, x: Map_axis_pos) void {// add map resolution, currently inf
+    pub fn move(s: *@This(), phys: *glob.Phys, change: Pos) void {// add map resolution, currently inf
     
         var xi: i8 = 0;
         var yi: i8 = 0;
@@ -48,15 +48,15 @@ pub const Map = struct{
         for(phys.model) |line, li| {
             for(line) |char, ci| {
                 if(s.collision(
-                                phys.pos.y+y+@intCast(i8, li),
-                                phys.pos.x+x+@intCast(i8, ci),
+                                phys.pos.y + change.y + @intCast(i8, li),
+                                phys.pos.x + change.x + @intCast(i8, ci),
                                 char,
                                 )) return;
             }
         }
 
-        phys.pos.x += x;
-        phys.pos.y += y;
+        phys.pos.x += change.x;
+        phys.pos.y += change.y;
 
     }
 
